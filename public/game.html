@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NeuroBird — игровой режим</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style/main.css">
+    <link rel="stylesheet" href="/assets/style/game.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">NeuroBird</div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/ai-game">Запустить симуляцию</a></li>
+                <li><a href="/game" class="current">Игровой режим</a></li>
+                <li><a href="/info">Подробнее о нейроэволюции</a></li>
+                <li><a href="/auth">Авторизация</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="game">
+        <h2>Проверь свои силы в Игровом режиме!</h2>
+        <canvas id="canvas" width="672" height="512"></canvas>
+    </main>
+    
+    <footer class="site-footer">
+        <p>© Flappy Agent — демонстрация нейроэволюции | NeuroBird, 2026</p>
+    </footer>
+    <script src="/assets/scripts/mainmodule/params.js"></script>
+    <script src="/assets/scripts/game.js"></script>
+    <script src="/assets/scripts/mainmodule/bird.js"></script>
+    <script src="/assets/scripts/mainmodule/neat.js"></script>
+    <script src="/assets/scripts/mainmodule/game_manager.js"></script>
+    <script src="/assets/scripts/mainmodule/frame_updater.js"></script>
+    <script src="/assets/scripts/mainmodule/main.js"></script>
+</body>
+</html>

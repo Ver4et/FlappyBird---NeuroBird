@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NeuroBird — нейроэволюция в действии</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style/main.css">
+    <link rel="stylesheet" href="assets/style/index.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">NeuroBird</div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="/" class="current">Главная</a></li>
+                <li><a href="/ai-game">Запустить симуляцию</a></li>
+                <li><a href="/game">Игровой режим</a></li>
+                <li><a href="/info">Подробнее о нейроэволюции</a></li>
+                <li><a href="/auth">Авторизация</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>NeuroBird</h1>
+                <p class="hero-tagline">Живой пример того, как алгоритмы эволюции помогают нейросетям решать игровые задачи.</p>
+                <a href="/ai-game" class="btn-cta">Запустить симуляцию</a>
+            </div>
+            <div class="hero-video">
+                <div class="video-wrapper">
+                    <video loop autoplay muted playsinline>
+                        <source src="assets/video/ляшушка.mp4" type="video/mp4">
+                        Ваш браузер не поддерживает видео.
+                    </video>
+                </div>
+                <p class="video-caption">Наглядная демонстрация обучения агентов</p>
+            </div>
+        </section>
+
+        <section class="features">
+            <h2>Что демонстрирует проект</h2>
+            <ul class="features-grid">
+                <li>Онлайн‑симуляция Flappy Bird с популяцией управляемых агентов.</li>
+                <li>Применение нейроэволюции (NEAT) для обучения поведения агентов.</li>
+                <li>Визуализация популяции, статистики поколений и контроль параметров обучения.</li>
+            </ul>
+        </section>
+
+        <section class="workflow">
+            <h2>Общая схема работы</h2>
+            <ol class="steps-list">
+                <li>Инициализация популяции (геномы — сети с узлами и связями).</li>
+                <li>Каждый агент получает вектор входов от среды (положение, скорость, дистанция до трубы).</li>
+                <li>Нейросеть генома возвращает действие (прыжок / без действия).</li>
+                <li>Среда обновляется, начисляется фитнесс; при гибели всех агентов — эволюция (селекция, кроссовер, мутация).</li>
+                <li>Повторение цикла для следующих поколений.</li>
+            </ol>
+        </section>
+
+        <section class="quick-nav">
+            <h2>Быстрая навигация</h2>
+            <div class="nav-cards">
+                <a href="/ai-game" class="nav-card">
+                    <h3>AI‑симуляция</h3>
+                    <p>Наблюдай за эволюцией нейросетей в реальном времени</p>
+                </a>
+                <a href="/game" class="nav-card">
+                    <h3>Игровой режим</h3>
+                    <p>Сыграй сам и сравни свой результат с ИИ</p>
+                </a>
+                <a href="/info" class="nav-card">
+                    <h3>О нейроэволюции</h3>
+                    <p>Как NEAT меняет топологию сетей и обучает стратегиям</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="purpose">
+            <h2>Зачем это нужно</h2>
+            <div class="purpose-card">
+                <p>Проект служит образовательной и демонстрационной цели: показать, как методы эволюции топологии нейросетей позволяют исследовать поведенческие стратегии без явного градиентного обучения, а также продемонстрировать воспроизводимость экспериментов через управление параметрами симуляции.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© Flappy Agent — демонстрация нейроэволюции | NeuroBird, 2026</p>
+    </footer>
+</body>
+</html>

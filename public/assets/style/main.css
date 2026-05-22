@@ -1,0 +1,115 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --back-header: #fce6a5;
+    --back-body: #FEF1CD;
+    --text-dark: #2c2b26;
+    --accent-blue: #0a1bff;
+    --radius-lg: 2rem;
+    --shadow-sm: 0 6px 12px rgba(0,0,0,0.05);
+}
+
+body {
+    background-color: var(--back-body);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+
+/* Header */
+.site-header {
+    background-color: var(--back-header);
+    font-family: 'Pixelify Sans', monospace;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    height: 80px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    margin-bottom: 2%;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #1f3b0c, #5e3e1a);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+}
+
+.main-nav .nav-list {
+    display: flex;
+    list-style: none;
+    gap: 0.5rem;
+}
+
+.main-nav a {
+    text-decoration: none;
+    color: #0a1bff;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 40px;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.main-nav a:hover {
+    background-color: #0a1bff;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.main-nav .current {
+    background-color: #0a1bff;
+    color: white;
+    box-shadow: 0 2px 8px rgba(10,27,255,0.3);
+}
+
+/* Footer */
+.site-footer {
+    background-color: #e0d3b5;
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 4rem;
+    font-size: 0.85rem;
+    color: #4a3e2a;
+    border-top: 1px solid #d6c49b;
+}
+
+/* Общие отступы */
+main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 0 1rem;
+}
+
+/* Адаптив навигации */
+@media (max-width: 720px) {
+    .site-header {
+        flex-direction: column;
+        height: auto;
+        padding: 1rem;
+        gap: 0.8rem;
+    }
+    
+    .main-nav .nav-list {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.3rem;
+    }
+    
+    .main-nav a {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+    }
+}

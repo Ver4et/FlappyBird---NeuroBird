@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Авторизация | NeuroBird</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style/main.css">
+    <link rel="stylesheet" href="assets/style/auth.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">NeuroBird</div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/ai-game">Запустить симуляцию</a></li>
+                <li><a href="/game">Игровой режим</a></li>
+                <li><a href="/info">Подробнее о нейроэволюции</a></li>
+                <li><a href="/auth" class="current">Авторизация</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="auth-main">
+        <div class="auth-container">
+            <!-- Форма Авторизации -->
+            <div id="loginForm" class="auth-form active">
+                <div class="form-header">
+                    <h1>Вход</h1>
+                    <p class="form-subtitle">Добро пожаловать обратно!</p>
+                </div>
+
+                <form id="loginFormElement" class="form-content">
+                    <div class="form-group">
+                        <label for="login-username">Логин</label>
+                        <input 
+                            type="text" 
+                            id="login-username" 
+                            name="login" 
+                            placeholder="Введите логин"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">Пароль</label>
+                        <input 
+                            type="password" 
+                            id="login-password" 
+                            name="password" 
+                            placeholder="Введите пароль"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-submit">Войти</button>
+
+                    <div id="loginError" class="error-message"></div>
+                </form>
+
+                <div class="form-footer">
+                    <p>Нет аккаунта? <button type="button" class="btn-switch" onclick="switchForm('register')">Зарегистрируйтесь</button></p>
+                </div>
+            </div>
+
+            <!-- Форма Регистрации -->
+            <div id="registerForm" class="auth-form">
+                <div class="form-header">
+                    <h1>Регистрация</h1>
+                    <p class="form-subtitle">Присоединитесь к эволюции!</p>
+                </div>
+
+                <form id="registerFormElement" class="form-content">
+                    <div class="form-group">
+                        <label for="register-username">Логин</label>
+                        <input 
+                            type="text" 
+                            id="register-username" 
+                            name="login" 
+                            placeholder="Выберите логин"
+                            required
+                            minlength="3"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input 
+                            type="email" 
+                            id="register-email" 
+                            name="email" 
+                            placeholder="Ваш email"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-username-display">Имя профиля</label>
+                        <input 
+                            type="text" 
+                            id="register-username-display" 
+                            name="username" 
+                            placeholder="Как вас называть в профиле"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">Пароль</label>
+                        <input 
+                            type="password" 
+                            id="register-password" 
+                            name="password" 
+                            placeholder="Минимум 6 символов"
+                            required
+                            minlength="6"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password-confirm">Повторите пароль</label>
+                        <input 
+                            type="password" 
+                            id="register-password-confirm" 
+                            name="passwordConfirm" 
+                            placeholder="Повторите пароль"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-submit">Зарегистрироваться</button>
+
+                    <div id="registerError" class="error-message"></div>
+                    <div id="registerSuccess" class="success-message"></div>
+                </form>
+
+                <div class="form-footer">
+                    <p>Уже есть аккаунт? <button type="button" class="btn-switch" onclick="switchForm('login')">Войдите</button></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© NeuroBird — демонстрация нейроэволюции, 2026</p>
+    </footer>
+
+    <script src="assets/scripts/auth.js"></script>
+</body>
+</html>

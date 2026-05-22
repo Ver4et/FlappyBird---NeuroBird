@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NeuroBird — AI-симуляция</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/style/main.css" />
+    <link rel="stylesheet" href="/assets/style/ai.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">NeuroBird</div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/ai-game" class="current">Запустить симуляцию</a></li>
+                <li><a href="/game">Игровой режим</a></li>
+                <li><a href="/info">Подробнее о нейроэволюции</a></li>
+                <li><a href="/auth">Авторизация</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="ai-page-main">
+        <section class="page-heading">
+            <h1>NEAT Flappy Bird Simulation</h1>
+            <p class="page-description">Симуляция обучения агентов в реальном времени с использованием алгоритма NEAT.</p>
+        </section>
+
+        <section class="controls-panel">
+            <h2>Настройки NEAT</h2>
+            <div class="control-grid">
+                <div class="control-group">
+                    <label class="control-label" for="populationSize">Популяция</label>
+                    <input id="populationSize" class="control-input" type="number" min="10" max="120" value="30" />
+                    <small>Сколько агентов одновременно играет</small>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="survivorsCount">Выжившие</label>
+                    <input id="survivorsCount" class="control-input" type="number" min="2" max="29" value="10" />
+                    <small>Сколько лучших птиц проходит в следующее поколение</small>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="mutationProb">Вероятность мутации</label>
+                    <input id="mutationProb" class="control-input" type="number" step="0.01" min="0" max="1" value="0.3" />
+                    <small>Чем больше, тем сильнее изменяются сети</small>
+                </div>
+            </div>
+            <div id="controls">
+                <button id="startBtn">Запустить симуляцию</button>
+            </div>
+        </section>
+
+        <section class="stats-panel">
+            <div id="stats">
+                <div class="stat">
+                    <span class="stat-label">Живых птиц</span>
+                    <span id="aliveCount" class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Поколение</span>
+                    <span id="generationNumber" class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Популяция</span>
+                    <span id="populationSizeValue" class="stat-value">30</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="game-canvas-wrapper">
+            <canvas id="canvas" width="672" height="512"></canvas>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© Flappy Agent — демонстрация нейроэволюции | NeuroBird, 2026</p>
+    </footer>
+    <script>
+        window.mainAutoStart = false;
+    </script>
+    <script src="/assets/scripts/mainmodule/params.js"></script>
+    <script src="/assets/scripts/mainmodule/bird.js"></script>
+    <script src="/assets/scripts/mainmodule/neat.js"></script>
+    <script src="/assets/scripts/mainmodule/game_manager.js"></script>
+    <script src="/assets/scripts/mainmodule/frame_updater.js"></script>
+    <script src="/assets/scripts/mainmodule/main.js"></script>
+    <script src="/assets/scripts/aigame-init.js"></script>
+</body>
+</html>

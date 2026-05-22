@@ -1,0 +1,28 @@
+.game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+h2 {
+    font-size: clamp(1rem, 4vw, 2rem);
+    background: linear-gradient(135deg, #2b3b0e, #5a3e1f);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 1rem;
+}
+
+#game-container {
+    width: 400px;
+    height: 600px;
+    border: 2px solid black;
+    display: block;
+    cursor: pointer;
+    background: #87ceeb;
+}
+
+#game-container canvas {
+    display: block;
+}

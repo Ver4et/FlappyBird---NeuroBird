@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NeuroBird — подробнее о нейроэволюции</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style/main.css">
+    <link rel="stylesheet" href="/assets/style/info.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">NeuroBird</div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/ai-game">Запустить симуляцию</a></li>
+                <li><a href="/game">Игровой режим</a></li>
+                <li><a href="/info" class="current">Подробнее о нейроэволюции</a></li>
+                <li><a href="/auth">Авторизация</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero hero-info">
+            <div class="hero-content">
+                <h1>Нейроэволюция на примере птицы</h1>
+                <p class="hero-tagline">Показываем, как небольшая популяция агентов учится проходить препятствия без прямого обучения, используя естественный отбор и мутации.</p>
+                <div class="hero-actions">
+                    <a href="/ai-game" class="btn-cta">Запустить симуляцию</a>
+                    <a href="/game" class="btn-secondary">Играть самому</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-card">
+                    <img src="/assets/photos/bird1.png" alt="Птичка NeuroBird" />
+                    <div class="hero-card-label">Агент-«птичка»</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-split">
+            <div class="split-text">
+                <h2>Что такое нейроэволюция?</h2>
+                <p>NEAT — это алгоритм, который одновременно меняет структуру сети и её веса. Вместо обучения по ошибке, агенты соревнуются за выживание: лучшие сети сохраняются, мутируют и комбинируются.</p>
+                <p>На примере Flappy Bird каждая птичка получает входные данные о трубах и своей позиции, принимает решение — прыгнуть или нет — и получает фитнес за пройденное расстояние.</p>
+            </div>
+            <div class="split-list">
+                <div class="info-card">
+                    <h3>Инициализация</h3>
+                    <p>Генерируется популяция случайных нейросетей. Пока они слабые, но с каждым поколением становятся всё точнее.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Оценка</h3>
+                    <p>Каждому агенту даётся очко за выживание и за прохождение труб. Чем дольше он летит, тем выше его фитнес.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Эволюция</h3>
+                    <p>Лучшие агенты проходят в новый раунд. Их сети скрещиваются, новые связи добавляются, и появляются мутации.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <h2>Графики обучения</h2>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Рост качества поколения</h3>
+                    <div class="chart-line">
+                        <span class="chart-point p1"></span>
+                        <span class="chart-point p2"></span>
+                        <span class="chart-point p3"></span>
+                        <span class="chart-point p4"></span>
+                        <span class="chart-point p5"></span>
+                        <svg viewBox="0 0 100 60" class="chart-svg">
+                            <polyline points="10,50 25,44 40,38 55,28 70,15 90,12" />
+                        </svg>
+                    </div>
+                    <p class="chart-caption">С ростом поколения увеличивается средний фитнес и вероятность успешного прохождения трассы.</p>
+                </div>
+                <div class="chart-card">
+                    <h3>Популяция и выживаемость</h3>
+                    <div class="chart-bars">
+                        <div class="bar-group">
+                            <div class="bar bar-1"></div>
+                            <span>1 поколение</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar bar-2"></div>
+                            <span>5 поколение</span>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar bar-3"></div>
+                            <span>10 поколение</span>
+                        </div>
+                    </div>
+                    <p class="chart-caption">Выжившие птицы меньше, но они сильнее: именно они создают следующее поколение.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-split reverse">
+            <div class="split-visual">
+                <div class="bubble-grid">
+                    <div class="bubble bubble-large">Входы</div>
+                    <div class="bubble bubble-small">Позиция птицы</div>
+                    <div class="bubble bubble-small">Расстояние до трубы</div>
+                    <div class="bubble bubble-small">Высота следующей трубы</div>
+                    <div class="bubble bubble-small">Скорость</div>
+                </div>
+            </div>
+            <div class="split-text">
+                <h2>Как решает нейросеть?</h2>
+                <p>Каждый агент оценивает окружение и пропускает данные через свою сеть. Выход — «взмахнуть» или «остаться». Чем чаще сеть делает правильные решения, тем дольше птица живёт.</p>
+                <p>Птицы, которые падают раньше других, получают меньший фитнес и почти никогда не остаются в следующей популяции.</p>
+            </div>
+        </section>
+
+        <section class="final-section">
+            <h2>Почему это интересно?</h2>
+            <div class="final-cards">
+                <div class="final-card">
+                    <h3>Без явного обучения</h3>
+                    <p>Агенты учатся через природный отбор, не полагаясь на градиенты или заранее подготовленные метки.</p>
+                </div>
+                <div class="final-card">
+                    <h3>Развивается структура сети</h3>
+                    <p>Алгоритм не только меняет веса, но и добавляет новые скрытые узлы и связи, улучшая архитектуру.</p>
+                </div>
+                <div class="final-card">
+                    <h3>Наглядная адаптация</h3>
+                    <p>Птицы наглядно демонстрируют, как популяция становится сильнее из поколения в поколение.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© Flappy Agent — демонстрация нейроэволюции | NeuroBird, 2026</p>
+    </footer>
+</body>
+</html>
