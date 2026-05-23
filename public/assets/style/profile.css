@@ -1,0 +1,403 @@
+/* Профиль стили */
+
+.profile-main {
+    min-height: calc(100vh - 160px);
+    padding: 2rem;
+}
+
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Секция профиля */
+.profile-section {
+    background: rgba(255, 248, 225, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    border: 2px solid #fae689;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-username {
+    font-size: 2rem;
+    font-family: 'Pixelify Sans', monospace;
+    background: linear-gradient(135deg, #2b3b0e, #5a3e1f);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+}
+
+.profile-email {
+    color: #5a4a2e;
+    font-size: 1rem;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #5a4a2e;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-family: 'Pixelify Sans', monospace;
+    color: #0a1bff;
+    font-weight: 700;
+}
+
+.btn-logout {
+    padding: 0.9rem 2rem;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 0.8rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.btn-logout:hover {
+    background-color: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+/* Секция скинов */
+.skins-section {
+    background: rgba(255, 248, 225, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    padding: 2.5rem;
+    border: 2px solid #fae689;
+}
+
+.skins-section h2 {
+    font-size: 1.8rem;
+    font-family: 'Pixelify Sans', monospace;
+    background: linear-gradient(135deg, #2b3b0e, #5a3e1f);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+.skins-description {
+    color: #5a4a2e;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+.skins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Карточка скина */
+.skin-card {
+    background: white;
+    border: 2px solid #fae689;
+    border-radius: 1.2rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.skin-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.skin-card.owned {
+    border-color: #0a1bff;
+}
+
+.skin-card.locked {
+    opacity: 0.7;
+}
+
+.skin-image {
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(135deg, #fce6a5, #FEF1CD);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.skin-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.skin-image.no-image {
+    color: #ccc;
+}
+
+.skin-locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.skin-info {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    flex: 1;
+}
+
+.skin-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c2b26;
+    font-family: 'Pixelify Sans', monospace;
+}
+
+.skin-price {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: #5a4a2e;
+}
+
+.skin-price-value {
+    font-weight: 700;
+    color: #0a1bff;
+}
+
+.skin-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.4rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.skin-status.unlocked {
+    background-color: #d4f4dd;
+    color: #0d663d;
+}
+
+.skin-status.locked {
+    background-color: #ffe6e6;
+    color: #8b0000;
+}
+
+.skin-status.owned {
+    background-color: #e3f2fd;
+    color: #0a1bff;
+}
+
+.skin-buttons {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: auto;
+}
+
+.btn-select {
+    flex: 1;
+    padding: 0.7rem;
+    background-color: #0a1bff;
+    color: white;
+    border: none;
+    border-radius: 0.6rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-select:hover:not(:disabled) {
+    background-color: #0810d4;
+    transform: translateY(-2px);
+}
+
+.btn-select:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-select.selected {
+    background-color: #4caf50;
+    position: relative;
+}
+
+.btn-select.selected::after {
+    content: ' ✓';
+}
+
+/* Уведомление */
+.notification-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.notification-modal.active {
+    display: flex;
+}
+
+.notification-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 1.2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+#notificationMessage {
+    font-size: 1rem;
+    color: #2c2b26;
+    line-height: 1.6;
+}
+
+.btn-close {
+    padding: 0.8rem 1.5rem;
+    background-color: #0a1bff;
+    color: white;
+    border: none;
+    border-radius: 0.6rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-close:hover {
+    background-color: #0810d4;
+    transform: translateY(-2px);
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .profile-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .profile-header {
+        width: 100%;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .profile-stats {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .skins-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .profile-username {
+        font-size: 1.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-main {
+        padding: 1rem;
+    }
+
+    .profile-section,
+    .skins-section {
+        padding: 1.5rem;
+    }
+
+    .skins-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    .skin-name {
+        font-size: 0.9rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}

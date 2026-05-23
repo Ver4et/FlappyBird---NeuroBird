@@ -355,6 +355,10 @@ GameManager.prototype = {
         if (Params.game_manager.PLAY_MODE === 0){   // human player
             if (!this.solo_bird.isAlive && !this.gameover){
                 var self = this;
+                // Сохраняем очки перед перезагрузкой игры
+                if (typeof window.saveGameScore === 'function') {
+                    window.saveGameScore(this.solo_bird.score)
+                }
                 setTimeout(function(){
                     clearInterval(timer);
                     self.startGame();

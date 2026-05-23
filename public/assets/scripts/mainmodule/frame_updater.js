@@ -17,9 +17,12 @@ var AssetManager = {
 
         // ensure that all images are loaded (now from assets/photos)
         for (var i = 0; i < length; i++){
-            AssetManager.img_list[arr[i]] = new Image();
-            AssetManager.img_list[arr[i]].src = "assets/photos/" + arr[i] + ".png";
-            AssetManager.img_list[arr[i]].onload = imgLoaded;
+            var key = typeof arr[i] === 'object' ? arr[i].name : arr[i]
+            var src = typeof arr[i] === 'object' ? arr[i].src : "assets/photos/" + arr[i] + ".png"
+            AssetManager.img_list[key] = new Image();
+            AssetManager.img_list[key].src = src;
+            AssetManager.img_list[key].onload = imgLoaded;
+            AssetManager.img_list[key].onerror = imgLoaded;
         }
     },
 
@@ -203,7 +206,18 @@ FrameUpdater.prototype = {
             if (!game_manager.gameover){
                 this._canvas.rotate(Math.min(game_manager.solo_bird.speed * 7, 90) * Math.PI /180);
             }
-            this._canvas.drawImage(AssetManager.getImg("red_bird"), -24, -24);
+            // Используем текущий скин игрока (загруженный из профиля)
+            var playerSkinName = window.currentPlayerSkin || 'bird1';
+            var playerImg = AssetManager.getImg(playerSkinName);
+            if (!playerImg || !playerImg.complete || playerImg.naturalWidth === 0) {
+                playerImg = AssetManager.getImg('bird1');
+            }
+            if (!playerImg || !playerImg.complete || playerImg.naturalWidth === 0) {
+                playerImg = AssetManager.getImg('red_bird');
+            }
+            if (playerImg && playerImg.complete && playerImg.naturalWidth !== 0) {
+                this._canvas.drawImage(playerImg, -24, -24);
+            }
             this._canvas.restore();
 
             if (Params.game_manager.PLAY_MODE === 2){

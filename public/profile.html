@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Личный кабинет | NeuroBird</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style/main.css">
+    <link rel="stylesheet" href="assets/style/profile.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">NeuroBird</div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/ai-game">Запустить симуляцию</a></li>
+                <li><a href="/game">Игровой режим</a></li>
+                <li><a href="/info">Подробнее о нейроэволюции</a></li>
+                <li><a href="/profile" class="current">Личный кабинет</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="profile-main">
+        <div class="profile-container">
+            <!-- Секция профиля -->
+            <section class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-info">
+                        <h1 id="username" class="profile-username">Загрузка...</h1>
+                        <p id="email" class="profile-email">Загрузка...</p>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <span class="stat-label">Очки</span>
+                            <span id="score" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-logout" onclick="logout()">Выход</button>
+            </section>
+
+            <!-- Секция скинов -->
+            <section class="skins-section">
+                <h2>Выбор скина для игрового режима</h2>
+                <p class="skins-description">Разблокируйте новые скины, набирая очки в игре</p>
+
+                <div id="skinsContainer" class="skins-grid">
+                    <!-- Скины будут загружены здесь -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Модальное окно для уведомлений -->
+        <div id="notificationModal" class="notification-modal">
+            <div class="notification-content">
+                <p id="notificationMessage"></p>
+                <button class="btn-close" onclick="closeNotification()">OK</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© Flappy Agent — демонстрация нейроэволюции | NeuroBird, 2026</p>
+    </footer>
+
+    <script src="assets/scripts/profile.js"></script>
+</body>
+</html>

@@ -20,7 +20,13 @@ AssetManager.loadImg([
     '6',
     '7',
     '8',
-    '9'
+    '9',
+    { name: 'bird1', src: 'assets/photos/bird1.png' },
+    { name: 'birdpumkin', src: 'assets/photos/skins/birdPumkin.png' },
+    { name: 'winterBird', src: 'assets/photos/skins/winterBird.png' },
+    { name: 'birdPilot', src: 'assets/photos/skins/birdPilot.png' },
+    { name: 'newyearbird', src: 'assets/photos/skins/newyearbird.png' },
+    { name: 'birdKing', src: 'assets/photos/skins/BirdKing.png' }
 ])
 
 AssetManager.loadComplete = function(){

@@ -58,13 +58,13 @@ document.getElementById('loginFormElement').addEventListener('submit', async (e)
 
         if (response.ok) {
             // Сохраняем токен в localStorage
-            localStorage.setItem('userToken', data.token);
+            localStorage.setItem('authToken', data.token);
             localStorage.setItem('userId', data.userId);
             localStorage.setItem('username', data.username);
             
-            // Перенаправляем на главную
+            // Перенаправляем на профиль
             setTimeout(() => {
-                window.location.href = '/';
+                window.location.href = '/profile';
             }, 500);
         } else {
             showError(errorDiv, data.message || 'Ошибка авторизации');
@@ -195,10 +195,10 @@ document.getElementById('register-password-confirm').addEventListener('input', f
 
 // Проверка, авторизован ли пользователь
 function checkAuth() {
-    const token = localStorage.getItem('userToken');
+    const token = localStorage.getItem('authToken');
     if (token) {
-        // Если авторизован, перенаправляем на главную
-        window.location.href = '/';
+        // Если авторизован, перенаправляем на профиль
+        window.location.href = '/profile';
     }
 }
 
