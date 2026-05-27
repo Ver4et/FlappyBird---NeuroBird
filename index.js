@@ -6,7 +6,7 @@ import { dirname } from 'path'
 import { Op } from 'sequelize'
 import crypto from 'crypto'
 import sequelize from './sequelize.js'
-import { Auth, User, Skin, UserSkin } from './models/mapping.js'
+import { Auth, User, Skin, UserSkin, Role, EvolutionRun } from './models/mapping.js'
 
 const app = express()
 app.use(express.json({ limit: '10kb' }))
@@ -92,6 +92,10 @@ const verifyAuthToken = (token) => {
     return userId
 }
 
+const getDefaultSkin = async () => {
+    return await Skin.findOne({ where: { name: 'Классика' } })
+}
+
 const checkLoginRateLimit = (ip) => {
     const now = Date.now()
     const record = loginAttempts.get(ip) || { count: 0, firstAttempt: now }
@@ -158,6 +162,10 @@ app.get("/profile", (req, res) => {
     res.sendFile(path.join(__dirname, "public/profile.html"))
 })
 
+app.get("/admin", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/admin.html"))
+})
+
 // API для регистрации
 app.post("/api/auth/register", async (req, res) => {
     try {
@@ -210,7 +218,7 @@ app.post("/api/auth/register", async (req, res) => {
         })
 
         // Даём пользователю дефолтный скин
-        const defaultSkin = await Skin.findOne({ where: { name: 'bird1' } })
+        const defaultSkin = await getDefaultSkin()
         if (defaultSkin) {
             await UserSkin.create({
                 id_User: userRecord.id,
@@ -266,6 +274,7 @@ app.post("/api/auth/login", async (req, res) => {
         }
 
         const token = createAuthToken(authRecord.id)
+        const role = user.id_Role ? await Role.findByPk(user.id_Role) : null
 
         res.status(200).json({
             message: "Авторизация успешна",
@@ -273,7 +282,8 @@ app.post("/api/auth/login", async (req, res) => {
             userId: user.id,
             username: user.username,
             email: user.email,
-            score: user.current_score
+            score: user.current_score,
+            role: role ? role.name : 'user'
         })
 
     } catch (error) {
@@ -332,7 +342,14 @@ app.get("/api/profile", validateToken, async (req, res) => {
         }
 
         // Получаем текущий скин
-        const currentSkin = user.id_CurrentSkin ? await Skin.findByPk(user.id_CurrentSkin) : null
+        let currentSkin = user.id_CurrentSkin ? await Skin.findByPk(user.id_CurrentSkin) : null
+        if (!currentSkin) {
+            currentSkin = await getDefaultSkin()
+            if (currentSkin) {
+                user.id_CurrentSkin = currentSkin.id
+                await user.save()
+            }
+        }
 
         res.status(200).json({
             id: user.id,
@@ -509,19 +526,226 @@ app.post("/api/profile/update-score", validateToken, async (req, res) => {
     }
 })
 
+// API для получения статистики сайта (для админ-панели)
+app.get("/api/admin/stats", validateToken, async (req, res) => {
+    try {
+        const auth = await Auth.findByPk(req.userId)
+        if (!auth) {
+            return res.status(401).json({ message: "Пользователь не найден" })
+        }
+
+        const user = await User.findOne({ where: { id_Auth: req.userId } })
+        if (!user) {
+            return res.status(404).json({ message: "Данные пользователя не найдены" })
+        }
+
+        const userRole = user.id_Role ? await Role.findByPk(user.id_Role) : null
+        if (!userRole || userRole.name !== 'admin') {
+            return res.status(403).json({ message: "Доступ запрещен" })
+        }
+
+        const totalUsers = await User.count()
+        const totalSkins = await Skin.count()
+        const totalSessions = await Auth.count()
+
+        res.status(200).json({
+            totalUsers,
+            totalSkins,
+            totalSessions,
+            status: "Все системы работают нормально"
+        })
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: "Ошибка сервера" })
+    }
+})
+
+// API для получения списка всех пользователей (для админ-панели)
+app.get("/api/admin/users", validateToken, async (req, res) => {
+    try {
+        const auth = await Auth.findByPk(req.userId)
+        if (!auth) {
+            return res.status(401).json({ message: "Пользователь не найден" })
+        }
+
+        const user = await User.findOne({ where: { id_Auth: req.userId } })
+        if (!user) {
+            return res.status(404).json({ message: "Данные пользователя не найдены" })
+        }
+
+        const userRole = user.id_Role ? await Role.findByPk(user.id_Role) : null
+        if (!userRole || userRole.name !== 'admin') {
+            return res.status(403).json({ message: "Доступ запрещен" })
+        }
+
+        const users = await User.findAll({
+            attributes: ['id', 'username', 'email', 'current_score', 'id_Role'],
+            include: {
+                model: Role,
+                attributes: ['name'],
+                required: false
+            }
+        })
+
+        res.status(200).json(users.map(u => ({
+            id: u.id,
+            username: u.username,
+            email: u.email,
+            score: u.current_score,
+            role: u.Role ? u.Role.name : 'user'
+        })))
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: "Ошибка сервера" })
+    }
+})
+
+// API для удаления пользователя (для админ-панели)
+app.post("/api/admin/users/:id/delete", validateToken, async (req, res) => {
+    try {
+        const auth = await Auth.findByPk(req.userId)
+        if (!auth) {
+            return res.status(401).json({ message: "Пользователь не найден" })
+        }
+
+        const user = await User.findOne({ where: { id_Auth: req.userId } })
+        if (!user) {
+            return res.status(404).json({ message: "Данные пользователя не найдены" })
+        }
+
+        const userRole = user.id_Role ? await Role.findByPk(user.id_Role) : null
+        if (!userRole || userRole.name !== 'admin') {
+            return res.status(403).json({ message: "Доступ запрещен" })
+        }
+
+        const targetUserId = Number(req.params.id)
+        if (!Number.isInteger(targetUserId) || targetUserId <= 0) {
+            return res.status(400).json({ message: "Некорректный идентификатор пользователя" })
+        }
+
+        const targetUser = await User.findByPk(targetUserId)
+        if (!targetUser) {
+            return res.status(404).json({ message: "Пользователь не найден" })
+        }
+
+        // Удаляем скины пользователя
+        await UserSkin.destroy({ where: { id_User: targetUserId } })
+
+        // Удаляем записи эволюции
+        await EvolutionRun.destroy({ where: { id_User: targetUserId } })
+
+        // Удаляем пользователя
+        await User.destroy({ where: { id: targetUserId } })
+
+        // Удаляем учетную запись
+        if (targetUser.id_Auth) {
+            await Auth.destroy({ where: { id: targetUser.id_Auth } })
+        }
+
+        res.status(200).json({ message: "Пользователь успешно удален" })
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: "Ошибка сервера" })
+    }
+})
+
+// API для обновления параметров пользователя (для админ-панели)
+app.post("/api/admin/users/:id/update", validateToken, async (req, res) => {
+    try {
+        const auth = await Auth.findByPk(req.userId)
+        if (!auth) {
+            return res.status(401).json({ message: "Пользователь не найден" })
+        }
+
+        const user = await User.findOne({ where: { id_Auth: req.userId } })
+        if (!user) {
+            return res.status(404).json({ message: "Данные пользователя не найдены" })
+        }
+
+        const userRole = user.id_Role ? await Role.findByPk(user.id_Role) : null
+        if (!userRole || userRole.name !== 'admin') {
+            return res.status(403).json({ message: "Доступ запрещен" })
+        }
+
+        const targetUserId = Number(req.params.id)
+        if (!Number.isInteger(targetUserId) || targetUserId <= 0) {
+            return res.status(400).json({ message: "Некорректный идентификатор пользователя" })
+        }
+
+        const targetUser = await User.findByPk(targetUserId)
+        if (!targetUser) {
+            return res.status(404).json({ message: "Пользователь не найден" })
+        }
+
+        const username = req.body.username ? sanitizeString(req.body.username) : null
+        const score = req.body.score !== undefined ? Number(req.body.score) : null
+
+        if (username && isValidUsername(username)) {
+            targetUser.username = username
+        }
+
+        if (score !== null && Number.isFinite(score) && score >= 0) {
+            targetUser.current_score = score
+        }
+
+        await targetUser.save()
+
+        res.status(200).json({
+            message: "Параметры пользователя обновлены",
+            user: {
+                id: targetUser.id,
+                username: targetUser.username,
+                email: targetUser.email,
+                score: targetUser.current_score
+            }
+        })
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: "Ошибка сервера" })
+    }
+})
+
 // Статические файлы ПОСЛЕ всех маршрутов
 app.use(express.static("public"))
 
 const initializeSkins = async () => {
     const skinsData = [
-        { name: 'bird1', price: 0, asset_url: '/assets/photos/bird1.png' },
-        { name: 'birdpumkin', price: 25, asset_url: '/assets/photos/skins/birdPumkin.png' },
-        { name: 'winterBird', price: 50, asset_url: '/assets/photos/skins/winterBird.png' },
-        { name: 'birdPilot', price: 75, asset_url: '/assets/photos/skins/birdPilot.png' },
-        { name: 'newyearbird', price: 100, asset_url: '/assets/photos/skins/newyearbird.png' },
-        { name: 'birdKing', price: 200, asset_url: '/assets/photos/skins/BirdKing.png' }
+        { name: 'Классика', price: 0, asset_url: '/assets/photos/bird1.png' },
+        { name: 'Пциква', price: 25, asset_url: '/assets/photos/skins/birdPumkin.png' },
+        { name: 'Зимняя птичка', price: 50, asset_url: '/assets/photos/skins/winterBird.png' },
+        { name: 'Птица-пилот', price: 75, asset_url: '/assets/photos/skins/birdPilot.png' },
+        { name: 'Новый год', price: 100, asset_url: '/assets/photos/skins/newyearbird.png' },
+        { name: 'Черная птичка', price: 125, asset_url: '/assets/photos/skins/BlackBird.png' },
+        { name: 'Самурай птичка', price: 150, asset_url: '/assets/photos/skins/GreenKomboBird.png' },
+        { name: 'Король птиц', price: 500, asset_url: '/assets/photos/skins/BirdKing.png' }
     ]
 
+    const skinNames = skinsData.map(s => s.name.trim())
+    const allSkins = await Skin.findAll()
+
+    // Удаляем явно дублирующиеся записи по имени
+    const seenNames = new Set()
+    const duplicateSkinIds = []
+    for (const skin of allSkins) {
+        const normalizedName = skin.name.trim()
+        if (seenNames.has(normalizedName)) {
+            duplicateSkinIds.push(skin.id)
+        } else {
+            seenNames.add(normalizedName)
+        }
+    }
+
+    if (duplicateSkinIds.length) {
+        console.log(`✓ Удаляю ${duplicateSkinIds.length} дублирующих записей скинов`)
+        await UserSkin.destroy({ where: { id_Skin: duplicateSkinIds } })
+        await Skin.destroy({ where: { id: duplicateSkinIds } })
+    }
+
+    // Обновляем / добавляем актуальные скины из файла
     for (const skinData of skinsData) {
         const existingSkin = await Skin.findOne({ where: { name: skinData.name } })
         if (!existingSkin) {
@@ -534,29 +758,79 @@ const initializeSkins = async () => {
             console.log(`✓ Скин "${skinData.name}" обновлен в БД`)
         }
     }
+
+    // Удаляем устаревшие скины, которых нет в текущем списке
+    const currentSkins = await Skin.findAll({ where: { name: { [Op.in]: skinNames } } })
+    const currentSkinIds = currentSkins.map(skin => skin.id)
+    const obsoleteSkins = await Skin.findAll({ where: { id: { [Op.notIn]: currentSkinIds } } })
+
+    if (obsoleteSkins.length) {
+        const obsoleteIds = obsoleteSkins.map(skin => skin.id)
+        const defaultSkin = currentSkins.find(skin => skin.name.trim() === 'Классика') || currentSkins[0]
+
+        if (defaultSkin) {
+            await User.update(
+                { id_CurrentSkin: defaultSkin.id },
+                { where: { id_CurrentSkin: obsoleteIds } }
+            )
+        }
+
+        await UserSkin.destroy({ where: { id_Skin: obsoleteIds } })
+        await Skin.destroy({ where: { id: obsoleteIds } })
+        console.log(`✓ Удалено ${obsoleteIds.length} устаревших скинов из БД`)
+    }
+}
+
+const initializeRoles = async () => {
+    const rolesData = [
+        { name: 'user' },
+        { name: 'admin' }
+    ]
+
+    for (const roleData of rolesData) {
+        const existingRole = await Role.findOne({ where: { name: roleData.name } })
+        if (!existingRole) {
+            await Role.create(roleData)
+            console.log(`✓ Роль "${roleData.name}" добавлена в БД`)
+        }
+    }
+}
+
+const initializeAdmin = async () => {
+    const adminAuth = await Auth.findOne({ where: { login: 'admin123' } })
+    if (!adminAuth) {
+        const adminRole = await Role.findOne({ where: { name: 'admin' } })
+        if (!adminRole) {
+            console.log("✗ Роль админ не найдена")
+            return
+        }
+
+        const newAdminAuth = await Auth.create({
+            login: 'admin123',
+            password: hashPassword('admin123'),
+            is_blocked: false
+        })
+
+        await User.create({
+            email: 'admin@flappybird.local',
+            username: 'admin123',
+            id_Auth: newAdminAuth.id,
+            current_score: 0,
+            id_Role: adminRole.id
+        })
+
+        console.log('✓ Администратор admin123 создан в БД')
+    }
 }
 
 const start = async () => {
     try {
-        // Аутентификация с БД
         await sequelize.authenticate()
-        console.log("✓ Подключение к БД успешно")
-
-        // Синхронизация моделей (создание таблиц)
         await sequelize.sync({ alter: true })
-        console.log("✓ Таблицы синхронизированы")
-
-        // Инициализация скинов
+        await initializeRoles()
+        await initializeAdmin()
         await initializeSkins()
-        console.log("✓ Скины инициализированы")
-
-        // Запуск сервера
-        app.listen(PORT, () => {
-            console.log(`✓ Сервер запущен на порту ${PORT}`)
-            console.log(`✓ Страница авторизации: http://localhost:${PORT}/auth`)
-            console.log(`✓ Личный кабинет: http://localhost:${PORT}/profile`)
-            console.log(`✓ Главная страница: http://localhost:${PORT}/`)
-        })
+        app.listen(PORT, () => { console.log(`Сервер запущен на порту ${PORT}`)})
     } catch (error) {
         console.error("✗ Ошибка при запуске:", error)
         process.exit(1)

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - FlappyBird</title>
+    <link rel="stylesheet" href="/assets/style/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>Админ-панель FlappyBird</h1>
+            <div class="admin-user-info">
+                <span id="adminUsername">admin123</span>
+                <button id="logoutBtn" class="logout-btn">Выход</button>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <button class="nav-btn active" data-tab="monitoring">Мониторинг</button>
+            <button class="nav-btn" data-tab="users">Пользователи</button>
+        </nav>
+
+        <!-- Таб Мониторинг -->
+        <section id="monitoring" class="admin-tab active">
+            <h2>Мониторинг сайта</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Всего пользователей</div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-status success">✓ Работает</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Доступных скинов</div>
+                    <div class="stat-value" id="totalSkins">0</div>
+                    <div class="stat-status success">✓ Работает</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Активных сессий</div>
+                    <div class="stat-value" id="totalSessions">0</div>
+                    <div class="stat-status success">✓ Работает</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Статус системы</div>
+                    <div class="stat-value status-ok">OK</div>
+                    <div class="stat-status success">✓ Все системы работают нормально</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Таб Пользователи -->
+        <section id="users" class="admin-tab">
+            <h2>Управление пользователями</h2>
+            <div class="users-toolbar">
+                <input type="text" id="searchUser" class="search-input" placeholder="Поиск по имени или email...">
+                <button id="refreshBtn" class="refresh-btn">Обновить</button>
+            </div>
+            <div class="users-table-wrapper">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Никнейм</th>
+                            <th>Email</th>
+                            <th>Очки</th>
+                            <th>Роль</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" class="loading">Загрузка...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Модальное окно редактирования пользователя -->
+        <div id="editModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Редактирование пользователя</h3>
+                    <button class="close-btn" id="closeModalBtn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editUsername">Никнейм:</label>
+                        <input type="text" id="editUsername" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="editScore">Очки:</label>
+                        <input type="number" id="editScore" class="form-input" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveChangesBtn" class="btn-primary">Сохранить</button>
+                    <button id="cancelEditBtn" class="btn-secondary">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно подтверждения удаления -->
+        <div id="deleteModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Подтверждение удаления</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить пользователя <strong id="deleteUsername"></strong>?</p>
+                    <p class="warning-text">Это действие нельзя отменить!</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="confirmDeleteBtn" class="btn-danger">Удалить</button>
+                    <button id="cancelDeleteBtn" class="btn-secondary">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/scripts/admin.js"></script>
+</body>
+</html>

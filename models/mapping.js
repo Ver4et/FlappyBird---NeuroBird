@@ -23,6 +23,20 @@ export const Auth = sequelize.define("Auth", {
     }
 }, { tableName: "Auth" });
 
+export const Role = sequelize.define("Role", {
+    id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    name: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: 'user' // по умолчанию все новые пользователи - обычные юзеры, всего две роли тут - пользователь и админ
+    }
+}, { tableName: "Role" });
+
 export const User = sequelize.define("User", {
     id: {
         type: DataTypes.INTEGER,
@@ -60,11 +74,22 @@ export const User = sequelize.define("User", {
             model: 'Skin',
             key: 'id'
         }
+    },
+    id_Role: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'Role',
+            key: 'id'
+        }
     }
 }, { tableName: 'User' });
 
 User.belongsTo(Auth, { foreignKey: 'id_Auth' });
 Auth.hasOne(User, { foreignKey: 'id_Auth' });
+
+User.belongsTo(Role, { foreignKey: 'id_Role' });
+Role.hasMany(User, { foreignKey: 'id_Role' });
 
 
 export const Skin = sequelize.define("Skin", {

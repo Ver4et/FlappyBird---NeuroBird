@@ -61,10 +61,12 @@ document.getElementById('loginFormElement').addEventListener('submit', async (e)
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('userId', data.userId);
             localStorage.setItem('username', data.username);
+            localStorage.setItem('userRole', data.role || 'user');
             
-            // Перенаправляем на профиль
+            // Перенаправляем в зависимости от роли
+            const redirectUrl = data.role === 'admin' ? '/admin' : '/profile';
             setTimeout(() => {
-                window.location.href = '/profile';
+                window.location.href = redirectUrl;
             }, 500);
         } else {
             showError(errorDiv, data.message || 'Ошибка авторизации');
