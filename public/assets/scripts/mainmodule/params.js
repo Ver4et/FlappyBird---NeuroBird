@@ -29,10 +29,9 @@ var Params = {
         POS_MAX_Y_PIPE: 305,
         GAP_PIPE: 100,
 
-        // adversarial params
-        ADVERSE_MODE: 0,                // 1 - ON, 0 - OFF
+        ADVERSE_MODE: 0, // 1 - ON, 0 - OFF
         MOVE_PIPE_PROB: 0.5,
-        PIPE_SPACING_PERCENTAGE: 0.3, // relative to screen width 
+        PIPE_SPACING_PERCENTAGE: 0.3,
         PIPE_Y_SPEED: 3,
 
         PlATFORM_Y: 495,
@@ -41,7 +40,7 @@ var Params = {
         BIRD_INIT_Y: 200,
         BIRD_RADIUS: 12,
         BIRD_Y_SPEED: 4.2,
-        BIRD_X_SPEED: 2, // x-coord of the bird
+        BIRD_X_SPEED: 2, // x-coord
 
         BIRD_HOVER_MAX_Y: 250,
         BIRD_HOVER_MIN_Y: 150,
@@ -50,7 +49,7 @@ var Params = {
 
         GRAVITY: 0.22,
 
-        PLAY_MODE: 2, // 0 - human, 1 - NEAT, 2 - human vs AI
+        PLAY_MODE: 2,
         PRINT_BRAIN: false
     }
 

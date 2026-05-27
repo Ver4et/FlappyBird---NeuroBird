@@ -51,11 +51,11 @@ export const User = sequelize.define("User", {
         current_score: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 0 // Сюда начисляются очки за игру, отсюда они списываются
+        defaultValue: 0 // очки за игру
     },
     id_CurrentSkin: {
         type: DataTypes.INTEGER,
-        allowNull: true, // true, чтобы при создании юзера не падала ошибка, пока скинов нет
+        allowNull: true,
         references: {
             model: 'Skin',
             key: 'id'

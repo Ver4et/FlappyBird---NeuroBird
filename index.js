@@ -4,15 +4,113 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { Op } from 'sequelize'
+import crypto from 'crypto'
 import sequelize from './sequelize.js'
 import { Auth, User, Skin, UserSkin } from './models/mapping.js'
 
 const app = express()
-app.use(express.json())
-app.use(cors())
+app.use(express.json({ limit: '10kb' }))
+app.use(express.urlencoded({ extended: false, limit: '10kb' }))
+app.use(cors({ methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }))
 const PORT = process.env.PORT || 5000
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+const TOKEN_SECRET = process.env.TOKEN_SECRET || 'default_token_secret'
+const TOKEN_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
+const MAX_LOGIN_ATTEMPTS = 5
+const LOGIN_WINDOW_MS = 15 * 60 * 1000
+const loginAttempts = new Map()
+
+const safeCompare = (a, b) => {
+    try {
+        const aBuf = Buffer.from(a, 'utf-8')
+        const bBuf = Buffer.from(b, 'utf-8')
+        if (aBuf.length !== bBuf.length) return false
+        return crypto.timingSafeEqual(aBuf, bBuf)
+    } catch {
+        return false
+    }
+}
+
+const sanitizeString = (value) => {
+    if (typeof value !== 'string') return ''
+    return value.trim()
+        .replace(/<[^>]*>/g, '')
+        .replace(/[\x00-\x1F\x7F]/g, '')
+}
+
+const isValidEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+const isValidLogin = (login) => {
+    return /^[a-zA-Z0-9_-]{3,30}$/.test(login)
+}
+
+const isValidUsername = (username) => {
+    return /^[a-zA-Z0-9 _-]{3,30}$/.test(username)
+}
+
+const hashPassword = (password) => {
+    const salt = crypto.randomBytes(16).toString('hex')
+    const derivedKey = crypto.scryptSync(password, salt, 64).toString('hex')
+    return `${salt}:${derivedKey}`
+}
+
+const verifyPassword = (password, storedPassword) => {
+    try {
+        const [salt, key] = storedPassword.split(':')
+        if (!salt || !key) return false
+        const derivedKey = crypto.scryptSync(password, salt, 64).toString('hex')
+        return safeCompare(derivedKey, key)
+    } catch {
+        return false
+    }
+}
+
+const createAuthToken = (userId) => {
+    const timestamp = Date.now()
+    const payload = `${userId}:${timestamp}`
+    const signature = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('hex')
+    return `token_${payload}.${signature}`
+}
+
+const verifyAuthToken = (token) => {
+    if (typeof token !== 'string' || !token.startsWith('token_')) return null
+    const tokenBody = token.slice(6)
+    const parts = tokenBody.split('.')
+    if (parts.length !== 2) return null
+    const [payload, signature] = parts
+    const expectedSignature = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('hex')
+    if (!safeCompare(signature, expectedSignature)) return null
+    const [idStr, timestampStr] = payload.split(':')
+    const userId = Number(idStr)
+    const timestamp = Number(timestampStr)
+    if (!Number.isInteger(userId) || !Number.isInteger(timestamp)) return null
+    if (Date.now() - timestamp > TOKEN_MAX_AGE_MS) return null
+    return userId
+}
+
+const checkLoginRateLimit = (ip) => {
+    const now = Date.now()
+    const record = loginAttempts.get(ip) || { count: 0, firstAttempt: now }
+    if (now - record.firstAttempt > LOGIN_WINDOW_MS) {
+        record.count = 0
+        record.firstAttempt = now
+    }
+    record.count += 1
+    loginAttempts.set(ip, record)
+    return record.count <= MAX_LOGIN_ATTEMPTS
+}
+
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('X-Frame-Options', 'DENY')
+    res.setHeader('Referrer-Policy', 'no-referrer')
+    res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
+    next()
+})
 
 // Middleware для проверки BearerToken
 const validateToken = (req, res, next) => {
@@ -23,27 +121,13 @@ const validateToken = (req, res, next) => {
 
     const token = authHeader.substring(7)
     req.token = token
-    req.userId = extractUserIdFromToken(token)
-    
+    req.userId = verifyAuthToken(token)
+
     if (!req.userId) {
         return res.status(401).json({ message: "Невалидный токен" })
     }
 
     next()
-}
-
-// Функция для извлечения userId из токена
-const extractUserIdFromToken = (token) => {
-    try {
-        const parts = token.split('_')
-        if (parts.length >= 3 && parts[0] === 'token') {
-            const authId = parseInt(parts[1])
-            return authId
-        }
-        return null
-    } catch (error) {
-        return null
-    }
 }
 
 // Маршруты для статических страниц
@@ -77,40 +161,50 @@ app.get("/profile", (req, res) => {
 // API для регистрации
 app.post("/api/auth/register", async (req, res) => {
     try {
-        const { login, email, username, password } = req.body
+        const login = sanitizeString(req.body.login)
+        const email = sanitizeString(req.body.email)
+        const username = sanitizeString(req.body.username)
+        const password = sanitizeString(req.body.password)
 
-        // Валидация входных данных
         if (!login || !email || !username || !password) {
             return res.status(400).json({ message: "Все поля обязательны" })
+        }
+
+        if (!isValidLogin(login)) {
+            return res.status(400).json({ message: "Логин должен содержать 3-30 символов: буквы, цифры, _ или -" })
+        }
+
+        if (!isValidUsername(username)) {
+            return res.status(400).json({ message: "Имя пользователя должно содержать 3-30 символов и может включать пробелы" })
+        }
+
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ message: "Введите корректный email" })
         }
 
         if (password.length < 6) {
             return res.status(400).json({ message: "Пароль должен быть минимум 6 символов" })
         }
 
-        // Проверка, существует ли пользователь с таким логином
         const existingAuth = await Auth.findOne({ where: { login } })
         if (existingAuth) {
             return res.status(409).json({ message: "Логин уже занят" })
         }
 
-        // Проверка, существует ли пользователь с таким email
         const existingUser = await User.findOne({ where: { email } })
         if (existingUser) {
             return res.status(409).json({ message: "Email уже зарегистрирован" })
         }
 
-        // Создание записи в Auth (логин и пароль)
         const authRecord = await Auth.create({
-            login: login,
-            password: password,
+            login,
+            password: hashPassword(password),
             is_blocked: false
         })
 
-        // Создание записи в User
         const userRecord = await User.create({
-            email: email,
-            username: username,
+            email,
+            username,
             id_Auth: authRecord.id,
             current_score: 0
         })
@@ -141,43 +235,41 @@ app.post("/api/auth/register", async (req, res) => {
 // API для авторизации
 app.post("/api/auth/login", async (req, res) => {
     try {
-        const { login, password } = req.body
+        const login = sanitizeString(req.body.login)
+        const password = sanitizeString(req.body.password)
+        const clientIp = req.ip || req.connection.remoteAddress || 'unknown'
 
-        // Валидация входных данных
+        if (!checkLoginRateLimit(clientIp)) {
+            return res.status(429).json({ message: "Слишком много попыток входа. Попробуйте позже." })
+        }
+
         if (!login || !password) {
             return res.status(400).json({ message: "Логин и пароль обязательны" })
         }
 
-        // Поиск пользователя в Auth
+        if (!isValidLogin(login)) {
+            return res.status(400).json({ message: "Неверный логин или пароль" })
+        }
+
         const authRecord = await Auth.findOne({ where: { login } })
-        
-        if (!authRecord) {
+        if (!authRecord || !verifyPassword(password, authRecord.password)) {
             return res.status(401).json({ message: "Неверный логин или пароль" })
         }
 
-        // Проверка пароля (в реальной системе нужно использовать bcrypt!)
-        if (authRecord.password !== password) {
-            return res.status(401).json({ message: "Неверный логин или пароль" })
-        }
-
-        // Проверка, не заблокирован ли пользователь
         if (authRecord.is_blocked) {
             return res.status(403).json({ message: "Аккаунт заблокирован" })
         }
 
-        // Получение данных пользователя
         const user = await User.findOne({ where: { id_Auth: authRecord.id } })
-        
         if (!user) {
             return res.status(404).json({ message: "Данные пользователя не найдены" })
         }
 
-        // В реальной системе здесь генерируется JWT токен
-        const token = `token_${authRecord.id}_${Date.now()}`
+        const token = createAuthToken(authRecord.id)
 
         res.status(200).json({
             message: "Авторизация успешна",
-            token: token,
+            token,
             userId: user.id,
             username: user.username,
             email: user.email,
@@ -193,7 +285,12 @@ app.post("/api/auth/login", async (req, res) => {
 // API для получения информации о пользователе
 app.get("/api/user/:id", async (req, res) => {
     try {
-        const user = await User.findByPk(req.params.id, {
+        const userId = Number(req.params.id)
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(400).json({ message: "Некорректный идентификатор пользователя" })
+        }
+
+        const user = await User.findByPk(userId, {
             include: [Auth],
             attributes: ['id', 'email', 'username', 'current_score']
         })
@@ -307,10 +404,10 @@ app.get("/api/skins", validateToken, async (req, res) => {
 // API для установки текущего скина
 app.post("/api/profile/set-skin", validateToken, async (req, res) => {
     try {
-        const { skinId } = req.body
+        const skinId = Number(req.body.skinId)
 
-        if (!skinId) {
-            return res.status(400).json({ message: "skinId обязателен" })
+        if (!Number.isInteger(skinId) || skinId <= 0) {
+            return res.status(400).json({ message: "skinId обязателен и должен быть числом" })
         }
 
         const auth = await Auth.findByPk(req.userId)
@@ -359,9 +456,9 @@ app.post("/api/profile/set-skin", validateToken, async (req, res) => {
 // API для обновления счёта очков
 app.post("/api/profile/update-score", validateToken, async (req, res) => {
     try {
-        const { score } = req.body
+        const score = Number(req.body.score)
 
-        if (typeof score !== 'number' || score < 0) {
+        if (!Number.isFinite(score) || score < 0) {
             return res.status(400).json({ message: "score должен быть положительным числом" })
         }
 
