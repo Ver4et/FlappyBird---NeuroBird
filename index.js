@@ -11,12 +11,21 @@ import { Auth, User, Skin, UserSkin, Role, EvolutionRun } from './models/mapping
 const app = express()
 app.use(express.json({ limit: '10kb' }))
 app.use(express.urlencoded({ extended: false, limit: '10kb' }))
-app.use(cors({ methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }))
+const configuredOrigins = (process.env.CORS_ORIGIN || '').split(',').map(origin => origin.trim()).filter(Boolean)
+app.use(cors({
+    origin: configuredOrigins.length ? configuredOrigins : true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}))
 const PORT = process.env.PORT || 5000
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const TOKEN_SECRET = process.env.TOKEN_SECRET || 'default_token_secret'
+const TOKEN_SECRET = process.env.TOKEN_SECRET
+if (!TOKEN_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('TOKEN_SECRET обязателен в production')
+}
+const authTokenSecret = TOKEN_SECRET || crypto.randomBytes(32).toString('hex')
 const TOKEN_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 const MAX_LOGIN_ATTEMPTS = 5
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
@@ -72,7 +81,7 @@ const verifyPassword = (password, storedPassword) => {
 const createAuthToken = (userId) => {
     const timestamp = Date.now()
     const payload = `${userId}:${timestamp}`
-    const signature = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('hex')
+    const signature = crypto.createHmac('sha256', authTokenSecret).update(payload).digest('hex')
     return `token_${payload}.${signature}`
 }
 
@@ -82,7 +91,7 @@ const verifyAuthToken = (token) => {
     const parts = tokenBody.split('.')
     if (parts.length !== 2) return null
     const [payload, signature] = parts
-    const expectedSignature = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('hex')
+    const expectedSignature = crypto.createHmac('sha256', authTokenSecret).update(payload).digest('hex')
     if (!safeCompare(signature, expectedSignature)) return null
     const [idStr, timestampStr] = payload.split(':')
     const userId = Number(idStr)
@@ -92,8 +101,8 @@ const verifyAuthToken = (token) => {
     return userId
 }
 
-const getDefaultSkin = async () => {
-    return await Skin.findOne({ where: { name: 'Классика' } })
+const getDefaultSkin = async (options = {}) => {
+    return await Skin.findOne({ where: { name: 'Классика' }, ...options })
 }
 
 const checkLoginRateLimit = (ip) => {
@@ -114,6 +123,15 @@ app.use((req, res, next) => {
     res.setHeader('Referrer-Policy', 'no-referrer')
     res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
     next()
+})
+
+app.get('/health', async (req, res) => {
+    try {
+        await sequelize.authenticate()
+        res.status(200).json({ status: 'ok', database: 'ok' })
+    } catch (error) {
+        res.status(503).json({ status: 'degraded', database: 'unavailable' })
+    }
 })
 
 // Middleware для проверки BearerToken
@@ -168,6 +186,7 @@ app.get("/admin", (req, res) => {
 
 // API для регистрации
 app.post("/api/auth/register", async (req, res) => {
+    let transaction
     try {
         const login = sanitizeString(req.body.login)
         const email = sanitizeString(req.body.email)
@@ -194,12 +213,14 @@ app.post("/api/auth/register", async (req, res) => {
             return res.status(400).json({ message: "Пароль должен быть минимум 6 символов" })
         }
 
-        const existingAuth = await Auth.findOne({ where: { login } })
+        transaction = await sequelize.transaction()
+
+        const existingAuth = await Auth.findOne({ where: { login }, transaction })
         if (existingAuth) {
             return res.status(409).json({ message: "Логин уже занят" })
         }
 
-        const existingUser = await User.findOne({ where: { email } })
+        const existingUser = await User.findOne({ where: { email }, transaction })
         if (existingUser) {
             return res.status(409).json({ message: "Email уже зарегистрирован" })
         }
@@ -208,25 +229,27 @@ app.post("/api/auth/register", async (req, res) => {
             login,
             password: hashPassword(password),
             is_blocked: false
-        })
+        }, { transaction })
 
         const userRecord = await User.create({
             email,
             username,
             id_Auth: authRecord.id,
             current_score: 0
-        })
+        }, { transaction })
 
         // Даём пользователю дефолтный скин
-        const defaultSkin = await getDefaultSkin()
+        const defaultSkin = await getDefaultSkin({ transaction })
         if (defaultSkin) {
             await UserSkin.create({
                 id_User: userRecord.id,
                 id_Skin: defaultSkin.id
-            })
+            }, { transaction })
             userRecord.id_CurrentSkin = defaultSkin.id
-            await userRecord.save()
+            await userRecord.save({ transaction })
         }
+
+        await transaction.commit()
 
         res.status(201).json({
             message: "Регистрация успешна",
@@ -237,6 +260,10 @@ app.post("/api/auth/register", async (req, res) => {
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: "Ошибка сервера при регистрации" })
+    } finally {
+        if (transaction && !transaction.finished) {
+            await transaction.rollback()
+        }
     }
 })
 
@@ -710,7 +737,7 @@ app.post("/api/admin/users/:id/update", validateToken, async (req, res) => {
 })
 
 // Статические файлы ПОСЛЕ всех маршрутов
-app.use(express.static("public"))
+app.use(express.static(path.join(__dirname, 'public')))
 
 const initializeSkins = async () => {
     const skinsData = [
@@ -797,7 +824,14 @@ const initializeRoles = async () => {
 }
 
 const initializeAdmin = async () => {
-    const adminAuth = await Auth.findOne({ where: { login: 'admin123' } })
+    const adminLogin = process.env.ADMIN_LOGIN
+    const adminPassword = process.env.ADMIN_PASSWORD
+    if (!adminLogin || !adminPassword) {
+        console.log('! ADMIN_LOGIN/ADMIN_PASSWORD не заданы: bootstrap-администратор не создаётся')
+        return
+    }
+
+    const adminAuth = await Auth.findOne({ where: { login: adminLogin } })
     if (!adminAuth) {
         const adminRole = await Role.findOne({ where: { name: 'admin' } })
         if (!adminRole) {
@@ -806,27 +840,27 @@ const initializeAdmin = async () => {
         }
 
         const newAdminAuth = await Auth.create({
-            login: 'admin123',
-            password: hashPassword('admin123'),
+            login: adminLogin,
+            password: hashPassword(adminPassword),
             is_blocked: false
         })
 
         await User.create({
             email: 'admin@flappybird.local',
-            username: 'admin123',
+            username: adminLogin,
             id_Auth: newAdminAuth.id,
             current_score: 0,
             id_Role: adminRole.id
         })
 
-        console.log('✓ Администратор admin123 создан в БД')
+        console.log(`✓ Администратор ${adminLogin} создан в БД`)
     }
 }
 
 const start = async () => {
     try {
         await sequelize.authenticate()
-        await sequelize.sync({ alter: true })
+        await sequelize.sync()
         await initializeRoles()
         await initializeAdmin()
         await initializeSkins()

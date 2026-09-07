@@ -2,7 +2,7 @@
     Contains NEAT Algorithm for AI part
 */
 
-Constant = {
+var Constant = {
     // Network Params
     IDX_BIAS: 1,
     IDX_PIPE_DIST: 2,
@@ -120,19 +120,21 @@ Generation.prototype = {
             return b.fitness - a.fitness;
         });
 
+        var survivorCount = Math.min(Math.max(2, Constant.SURVIVORS), Constant.POPULATION - 1);
+
         // keep top surviving birds and kill the rest
-        for (var i = Constant.SURVIVORS; i < Constant.POPULATION; i++){
+        for (var i = survivorCount; i < Constant.POPULATION; i++){
             this.population[i] = null;
             delete this.population[i];
         }
 
         // conduct crossover on top winners
-        for (var i = Constant.SURVIVORS; i < Constant.POPULATION; i++){
-            this.population[i] = this._crossover(Math.floor(Math.random() * Constant.SURVIVORS), Math.floor(Math.random() * Constant.SURVIVORS));
+        for (var i = survivorCount; i < Constant.POPULATION; i++){
+            this.population[i] = this._crossover(Math.floor(Math.random() * survivorCount), Math.floor(Math.random() * survivorCount));
         }
 
         // reset params on top winners
-        for (var i = 0; i < Constant.SURVIVORS; i++){
+        for (var i = 0; i < survivorCount; i++){
             this.population[i].init();
         }
 
